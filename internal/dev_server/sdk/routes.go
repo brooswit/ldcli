@@ -12,8 +12,18 @@ func BindRoutes(router *mux.Router) {
 	// events
 	router.HandleFunc("/bulk", DevNull)
 	router.HandleFunc("/diagnostic", DevNull)
-	router.Handle("/events/bulk/{envId}", EventsCorsHeaders(DevNull))
-	router.Handle("/events/diagnostic/{envId}", EventsCorsHeaders(DevNull))
+
+	// events/bulk routes with proper CORS handling
+	eventsBulkRouter := router.PathPrefix("/events/bulk/{envId}").Subrouter()
+	eventsBulkRouter.Use(EventsCorsHeaders)
+	eventsBulkRouter.Methods(http.MethodOptions).HandlerFunc(ConstantResponseHandler(http.StatusOK, ""))
+	eventsBulkRouter.Methods(http.MethodPost).HandlerFunc(DevNull)
+
+	// events/diagnostic routes with proper CORS handling
+	eventsDiagRouter := router.PathPrefix("/events/diagnostic/{envId}").Subrouter()
+	eventsDiagRouter.Use(EventsCorsHeaders)
+	eventsDiagRouter.Methods(http.MethodOptions).HandlerFunc(ConstantResponseHandler(http.StatusOK, ""))
+	eventsDiagRouter.Methods(http.MethodPost).HandlerFunc(DevNull)
 	router.HandleFunc("/mobile", DevNull)
 	router.HandleFunc("/mobile/events", DevNull)
 	router.HandleFunc("/mobile/events/bulk", DevNull)
